@@ -1,4 +1,3 @@
-````markdown
 # Truco Paulista
 
 ![Truco Paulista Banner](images/background-img.jpg)
@@ -38,7 +37,6 @@
 git clone https://github.com/yuri-moraes/truco_paulista.git
 cd truco_paulista
 ```
-````
 
 ### Criar um Ambiente Virtual (Opcional, mas Recomendado)
 
@@ -196,9 +194,9 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 ## Agradecimentos
 
 - [Pygame](https://www.pygame.org/) - Biblioteca utilizada para o desenvolvimento do jogo.
-- [OpenGameArt](https://opengameart.org/) - Fonte de recursos gráficos e sonoros utilizados no jogo.
+- [Freesound](https://freesound.org/) - Fonte de recursos sonoros utilizados no jogo.
 - [GitHub](https://github.com/) - Plataforma para hospedagem do código-fonte.
 
 ---
 
-**Desenvolvido com ❤️ por [Seu Nome](https://github.com/yuri-moraes)**
+**Desenvolvido com ❤️ por [Yuri Moraes](https://github.com/yuri-moraes)**

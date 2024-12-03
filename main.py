@@ -51,6 +51,7 @@ def main():
     truco_message = ""
     truco_accepted = False
     current_truco_level = -1  # -1 significa que não há truco ainda
+    opponent_always_accept_truco = False  # Flag adicionada
     
     # Variáveis para arrastar
     dragging_card = None
@@ -92,8 +93,8 @@ def main():
                             truco_message = f"Você pediu {requested_level.capitalize()}!"
                             print(f"Jogador pediu {requested_level.capitalize()}")
                             
-                            # Oponente aceita ou recusa aleatoriamente
-                            if random.choice([True, False]):
+                            # Decidir se o oponente aceita ou recusa
+                            if opponent_always_accept_truco:
                                 truco_accepted = True
                                 bet_value = requested_value
                                 print(f"Oponente aceitou o {requested_level.capitalize()}")
@@ -104,74 +105,91 @@ def main():
                                 time.sleep(1)  # Pausa breve para mostrar a mensagem
                                 truco_requested = False  # Pronto para solicitar o próximo truco
                                 current_truco_level += 1  # Incrementar o nível após aceitação
+                                opponent_always_accept_truco = True  # Manter a flag como True
                             else:
-                                truco_accepted = False
-                                bet_value = requested_value
-                                player_score += bet_value  # Jogador ganha pontos
-                                print(f"Oponente recusou o {requested_level.capitalize()}")
-                                
-                                # Exibir mensagem de recusa
-                                declined_text = f"Oponente recusou o {requested_level.capitalize()}!"
-                                draw_text(screen, declined_text, font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
-                                pygame.display.flip()
-                                time.sleep(2)
-                                
-                                # Verificar se o jogador já atingiu ou excedeu 12 pontos
-                                if player_score >= 12:
-                                    # Jogador venceu o jogo
-                                    victory_text = "VOCÊ VENCEU!"
-                                    draw_text(screen, victory_text, font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 20))
+                                # Oponente decide aleatoriamente aceitar ou recusar
+                                if random.choice([True, False]):
+                                    truco_accepted = True
+                                    bet_value = requested_value
+                                    print(f"Oponente aceitou o {requested_level.capitalize()}")
+                                    # Mostrar mensagem de aceitação
+                                    accepted_text = f"Oponente aceitou o {requested_level.capitalize()}!"
+                                    draw_text(screen, accepted_text, font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
                                     pygame.display.flip()
-                                    # Tocar música de vitória
-                                    pygame.mixer.music.stop()
-                                    if 'winner-song' in sounds:
-                                        sounds['winner-song'].play()
-                                    else:
-                                        print("Erro: Música de vitória 'winner-song' não encontrada.")
-                                    time.sleep(5)
-                                    # Parar música de vitória
-                                    if 'winner-song' in sounds:
-                                        sounds['winner-song'].stop()
-                                    # Reiniciar o jogo
-                                    player_score = 0
-                                    opponent_score = 0
-                                    game_state = reset_game()
-                                    deck = game_state['deck']
-                                    player_hand = game_state['player_hand']
-                                    opponent_hand = game_state['opponent_hand']
-                                    vira_card = game_state['vira_card']
-                                    manilhas = game_state['manilhas']
-                                    round_results = []
-                                    current_round = 1
-                                    bet_value = 1
-                                    truco_requested = False
-                                    truco_message = ""
-                                    truco_accepted = False
-                                    current_truco_level = -1  # Resetar nível de truco
-                                    player_played_cards = []
-                                    # Reiniciar música de fundo
-                                    try:
-                                        pygame.mixer.music.load(os.path.join(SOUNDS_DIR, "background-music.wav"))
-                                        pygame.mixer.music.play(-1)
-                                    except pygame.error as e:
-                                        print(f"Erro ao carregar a música de fundo: {e}")
-                                    continue  # Pular o resto do loop
+                                    time.sleep(1)  # Pausa breve para mostrar a mensagem
+                                    truco_requested = False  # Pronto para solicitar o próximo truco
+                                    current_truco_level += 1  # Incrementar o nível após aceitação
+                                    opponent_always_accept_truco = True  # Agora o oponente sempre aceitará Truco
                                 else:
-                                    # Reiniciar a partida
-                                    game_state = reset_game()
-                                    deck = game_state['deck']
-                                    player_hand = game_state['player_hand']
-                                    opponent_hand = game_state['opponent_hand']
-                                    vira_card = game_state['vira_card']
-                                    manilhas = game_state['manilhas']
-                                    round_results = []
-                                    current_round = 1
-                                    bet_value = 1
-                                    truco_requested = False
-                                    truco_message = ""
-                                    player_played_cards = []
-                                    current_truco_level = -1  # Resetar nível de truco
-                                    continue  # Pular o resto do loop
+                                    truco_accepted = False
+                                    bet_value = requested_value
+                                    player_score += bet_value  # Jogador ganha pontos
+                                    print(f"Oponente recusou o {requested_level.capitalize()}")
+                                    
+                                    # Exibir mensagem de recusa
+                                    declined_text = f"Oponente recusou o {requested_level.capitalize()}!"
+                                    draw_text(screen, declined_text, font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
+                                    pygame.display.flip()
+                                    time.sleep(2)
+                                    
+                                    # Verificar se o jogador já atingiu ou excedeu 12 pontos
+                                    if player_score >= 12:
+                                        # Jogador venceu o jogo
+                                        victory_text = "VOCÊ VENCEU!"
+                                        draw_text(screen, victory_text, font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 20))
+                                        pygame.display.flip()
+                                        # Tocar música de vitória
+                                        pygame.mixer.music.stop()
+                                        if 'winner-song' in sounds:
+                                            sounds['winner-song'].play()
+                                        else:
+                                            print("Erro: Música de vitória 'winner-song' não encontrada.")
+                                        time.sleep(5)
+                                        # Parar música de vitória
+                                        if 'winner-song' in sounds:
+                                            sounds['winner-song'].stop()
+                                        # Reiniciar o jogo
+                                        player_score = 0
+                                        opponent_score = 0
+                                        game_state = reset_game()
+                                        deck = game_state['deck']
+                                        player_hand = game_state['player_hand']
+                                        opponent_hand = game_state['opponent_hand']
+                                        vira_card = game_state['vira_card']
+                                        manilhas = game_state['manilhas']
+                                        round_results = []
+                                        current_round = 1
+                                        bet_value = 1
+                                        truco_requested = False
+                                        truco_message = ""
+                                        truco_accepted = False
+                                        current_truco_level = -1  # Resetar nível de truco
+                                        player_played_cards = []
+                                        opponent_always_accept_truco = False  # Resetar a flag
+                                        # Reiniciar música de fundo
+                                        try:
+                                            pygame.mixer.music.load(os.path.join(SOUNDS_DIR, "background-music.wav"))
+                                            pygame.mixer.music.play(-1)
+                                        except pygame.error as e:
+                                            print(f"Erro ao carregar a música de fundo: {e}")
+                                        continue  # Pular o resto do loop
+                                    else:
+                                        # Reiniciar a partida
+                                        game_state = reset_game()
+                                        deck = game_state['deck']
+                                        player_hand = game_state['player_hand']
+                                        opponent_hand = game_state['opponent_hand']
+                                        vira_card = game_state['vira_card']
+                                        manilhas = game_state['manilhas']
+                                        round_results = []
+                                        current_round = 1
+                                        bet_value = 1
+                                        truco_requested = False
+                                        truco_message = ""
+                                        player_played_cards = []
+                                        current_truco_level = -1  # Resetar nível de truco
+                                        opponent_always_accept_truco = False  # Resetar a flag
+                                        continue  # Pular o resto do loop
                         else:
                             print("Truco já atingiu o nível máximo.")
                             # Opcional: mostrar mensagem que Truco está no nível máximo
@@ -293,8 +311,9 @@ def main():
                         truco_requested = False
                         truco_message = ""
                         truco_accepted = False
-                        current_truco_level = -1  # Resetar nível de truco
+                        current_truco_level = -1
                         player_played_cards = []
+                        opponent_always_accept_truco = False  # Resetar a flag
                         # Reiniciar música de fundo
                         try:
                             pygame.mixer.music.load(os.path.join(SOUNDS_DIR, "background-music.wav"))
@@ -333,8 +352,9 @@ def main():
                         truco_requested = False
                         truco_message = ""
                         truco_accepted = False
-                        current_truco_level = -1  # Resetar nível de truco
+                        current_truco_level = -1
                         player_played_cards = []
+                        opponent_always_accept_truco = False  # Resetar a flag
                         # Reiniciar música de fundo
                         try:
                             pygame.mixer.music.load(os.path.join(SOUNDS_DIR, "background-music.wav"))
@@ -358,6 +378,7 @@ def main():
                     truco_accepted = False
                     current_truco_level = -1  # Resetar nível de truco
                     player_played_cards = []
+                    opponent_always_accept_truco = False  # Resetar a flag
         
         # Desenhar a Tela
         screen.fill(WHITE)
