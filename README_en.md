@@ -1,6 +1,6 @@
 # Truco Paulista
 
-![Truco Paulista Banner](images/background-img.jpg)
+![Truco Paulista Banner](images/clubs_4.png)
 
 **Truco Paulista** is a digital implementation of the traditional Brazilian card game _Truco Paulista_. Developed in Python using the Pygame library, this game offers an engaging and interactive experience, allowing players to challenge an AI opponent with intuitive drag-and-drop mechanics and strategic gameplay.
 
@@ -95,7 +95,7 @@ python main.py
 3. **Truco Mechanics:**
 
 - **Pedir Truco:** Click the "Pedir Truco" button to escalate the game stakes. The AI will automatically accept subsequent Truco levels—Seis, Nove, and Doze.
-   - **Scoring:** Points are awarded based on the outcome of each round. The first player to reach or exceed 12 points wins the game.
+     - **Scoring:** Points are awarded based on the outcome of each round. The first player to reach or exceed 12 points wins the game.
 
 4. **Game Over:**
 

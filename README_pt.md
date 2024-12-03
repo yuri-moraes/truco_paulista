@@ -1,6 +1,6 @@
 # Truco Paulista
 
-![Truco Paulista Banner](images/background-img.jpg)
+![Truco Paulista Banner](images/clubs_4.png)
 
 **Truco Paulista** é uma implementação digital do tradicional jogo de cartas brasileiro _Truco Paulista_. Desenvolvido em Python utilizando a biblioteca Pygame, este jogo oferece uma experiência envolvente e interativa, permitindo que os jogadores desafiem um oponente de IA com mecânicas intuitivas de arrastar e soltar e jogabilidade estratégica.
 
