@@ -27,13 +27,6 @@ def main():
         pygame.quit()
         sys.exit()
     
-    # Tocar Música de Fundo
-    background_music_path = os.path.join(SOUNDS_DIR, "background-music.wav")
-    try:
-        pygame.mixer.music.load(background_music_path)
-        pygame.mixer.music.play(-1)
-    except pygame.error as e:
-        print(f"Erro ao carregar a música de fundo: {e}")
     
     # Variáveis do Jogo
     game_state = reset_game()
@@ -64,12 +57,52 @@ def main():
     player_played_cards = []  # Lista de cartas jogadas pelo jogador
     round_results = []
     current_round = 1
+
+    # Inicialização de música
+    pygame.mixer.music.load(os.path.join(SOUNDS_DIR, "background-music.wav"))
+    pygame.mixer.music.play(-1)
+    volume = 0.5  # Volume inicial (50%)
+    pygame.mixer.music.set_volume(volume)
+    
+    # Botões de controle de volume
+     # Tamanho dos botões
+    button_width = 50
+    button_height = 50
+    padding = 10  # Espaçamento entre os botões
+    
+    # Posicionar botões no canto inferior direito
+    volume_up_button = pygame.Rect(
+        SCREEN_WIDTH - button_width - padding,  # Posição x
+        SCREEN_HEIGHT - (3 * button_height) - (3 * padding),  # Posição y
+        button_width,
+        button_height
+    )
+    volume_down_button = pygame.Rect(
+        SCREEN_WIDTH - button_width - padding,  # Posição x
+        SCREEN_HEIGHT - (2 * button_height) - (2 * padding),  # Posição y
+        button_width,
+        button_height
+    )
+    mute_button = pygame.Rect(
+        SCREEN_WIDTH - button_width - padding,  # Posição x
+        SCREEN_HEIGHT - button_height - padding,  # Posição y
+        button_width,
+        button_height
+    )
+    is_muted = False
+
+    play_area_rect = pygame.Rect(
+                        SCREEN_WIDTH // 2 - CARD_WIDTH // 2,  # Centraliza horizontalmente
+                        SCREEN_HEIGHT - 325,  # Ajusta a altura (200px acima do rodapé)
+                        CARD_WIDTH,
+                        CARD_HEIGHT
+                    )
     
     # Fonte
     font = pygame.font.SysFont(None, 36)
     
     # Botão de Truco
-    truco_button_rect = pygame.Rect(SCREEN_WIDTH - 150, 10, 140, 40)
+    truco_button_rect = pygame.Rect(SCREEN_WIDTH - 150, SCREEN_HEIGHT // 2 - 20, 140, 40)
     
     clock = pygame.time.Clock()
     running = True
@@ -81,6 +114,30 @@ def main():
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+
+                # Aumentar volume
+                if volume_up_button.collidepoint(pos):
+                    if volume < 1.0:
+                        volume = min(1.0, volume + 0.1)
+                        pygame.mixer.music.set_volume(volume)
+                        is_muted = False
+                
+                # Diminuir volume
+                elif volume_down_button.collidepoint(pos):
+                    if volume > 0.0:
+                        volume = max(0.0, volume - 0.1)
+                        pygame.mixer.music.set_volume(volume)
+                        if volume == 0.0:
+                            is_muted = True
+                
+                # Mutar/desmutar
+                elif mute_button.collidepoint(pos):
+                    if is_muted:
+                        pygame.mixer.music.set_volume(volume)  # Retorna ao volume anterior
+                        is_muted = False
+                    else:
+                        pygame.mixer.music.set_volume(0.0)
+                        is_muted = True
                 if truco_button_rect.collidepoint(pos):
                     if not truco_requested:
                         if current_truco_level < len(TRUCO_LEVELS)-1:
@@ -217,17 +274,25 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 if dragging_card:
                     pos = pygame.mouse.get_pos()
-                    play_area_rect = pygame.Rect(SCREEN_WIDTH // 2 - 40, SCREEN_HEIGHT - 260, CARD_WIDTH, CARD_HEIGHT)
-                    if play_area_rect.collidepoint(pos):  # Verifica se está na área de jogo
+                    # Verifica se a carta está na área de jogo
+                    if play_area_rect.collidepoint(pos):
+                        # Centraliza a carta na borda
                         played_cards['player'] = dragging_card
                         print(f"Jogador jogou a carta: {played_cards['player']}")
                         player_played_cards.append(dragging_card)
+                        # Posiciona no centro da área delimitada pela borda
+                        play_card_position = (
+                            play_area_rect.x + play_area_rect.width // 2 - CARD_WIDTH // 2,
+                            play_area_rect.y + play_area_rect.height // 2 - CARD_HEIGHT // 2
+                        )
                         player_turn = False
                         opponent_turn = True
-                    else:  # Se não for na área correta, retorna a carta para a mão
+                    else:
+                        # Se não estiver na área, retorna a carta para a mão do jogador
                         player_hand.append(dragging_card)
                     dragging_card = None
                     dragging_pos = None
+
         
         # Lógica do Jogo
         
@@ -383,6 +448,13 @@ def main():
         # Desenhar a Tela
         screen.fill(WHITE)
         screen.blit(background, (0, 0))
+
+        # Desenhar a área de jogo com borda, se definida
+        if 'play_area_rect' in locals():
+            pygame.draw.rect(screen, (0, 0, 0), play_area_rect, 3)
+        else:
+            print("Erro: Área de jogo não foi definida corretamente.")
+
     
         # Desenhar Mãos do Jogador
         for i, card in enumerate(player_hand):
@@ -409,13 +481,22 @@ def main():
                 screen.blit(cards[card_key], (x, y))
             else:
                 print(f"Carta '{card_key}' não encontrada nas imagens.")
+        
+        # Desenhar Carta Jogada pelo Jogador no Local Centralizado
+        if played_cards['player']:
+            card_key = played_cards['player'].lower()
+            if card_key in cards:
+                screen.blit(cards[card_key], play_card_position)
+            else:
+                print(f"Carta '{card_key}' não encontrada nas imagens.")
+
     
         # Desenhar Cartas Jogadas pelo Jogador acima das Cartas dele
         for i, card in enumerate(player_played_cards):
             card_key = card.lower()
             if card_key in cards:
                 x = SCREEN_WIDTH // 2 - 40
-                y = SCREEN_HEIGHT - 260 - i * 30  # Posição acima das cartas do jogador, com sobreposição
+                y = SCREEN_HEIGHT - 300 - i * 30  # Posição acima das cartas do jogador, com sobreposição
                 screen.blit(cards[card_key], (x, y))
             else:
                 print(f"Carta '{card_key}' não encontrada nas imagens.")
@@ -427,6 +508,7 @@ def main():
                 screen.blit(cards[card_key], (dragging_pos[0] - 40, dragging_pos[1] - 60))
             else:
                 print(f"Carta '{card_key}' não encontrada nas imagens.")
+
     
         # Desenhar Vira
         card_key = vira_card.lower()
@@ -462,6 +544,17 @@ def main():
         truco_text = font.render(button_label, True, WHITE)
         text_rect = truco_text.get_rect(center=truco_button_rect.center)
         screen.blit(truco_text, text_rect)
+
+         # Botões
+        pygame.draw.rect(screen, (0, 255, 0), volume_up_button)  # Aumentar volume
+        pygame.draw.rect(screen, (255, 255, 0), volume_down_button)  # Diminuir volume
+        pygame.draw.rect(screen, (255, 0, 0), mute_button)  # Mutar som
+        
+        # Ícones de controle de volume (opcional, pode usar imagens)
+        font = pygame.font.SysFont(None, 36)
+        draw_text(screen, "+", font, BLACK, volume_up_button.center)
+        draw_text(screen, "-", font, BLACK, volume_down_button.center)
+        draw_text(screen, "M", font, BLACK, mute_button.center)
     
         # Exibir Mensagem de Truco (se houver)
         if truco_requested:
