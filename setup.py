@@ -1,12 +1,16 @@
-import cx_Freeze
+from cx_Freeze import setup, Executable
 
-executables = [cx_Freeze.Executable('main.py')]
+build_options = {
+    'packages': ['pygame'],
+    'include_files': ['images', 'sounds']
+}
 
-cx_Freeze.setup(
+executables = [
+    Executable("main.py", base="Win32GUI")
+]
+
+setup(
     name="Truco Paulista game",
-    options={'build_exe': {'packages':['pygame'],
-                           'include_files':['images', 'sounds']}},
-
-    executables = executables
-    
+    options={'build_exe': build_options},
+    executables=executables
 )
