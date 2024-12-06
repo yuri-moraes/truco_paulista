@@ -31,14 +31,30 @@ def get_card_value(card, manilhas):
 def reset_game():
     """Reinicia o jogo e retorna o estado inicial."""
     deck = create_deck()
+    if len(deck) < 7:
+        raise ValueError("O baralho não contém cartas suficientes para reiniciar o jogo.")
     player_hand = deck[:3]
     opponent_hand = deck[3:6]
     vira_card = deck[6]
     manilhas = determine_manilhas(vira_card)
     return {
-        'deck': deck,
+        'deck': deck[7:],  # Remove as cartas já distribuídas
         'player_hand': player_hand,
         'opponent_hand': opponent_hand,
-        'vira_card': vira_card,
-        'manilhas': manilhas
+        'vira_card': vira_card, 
+        'manilhas': manilhas,
+        'played_cards': {'player': None, 'opponent': None},
     }
+
+def update_truco_level(current_level):
+    """Atualiza o nível do truco para o próximo nível."""
+    if current_level < len(TRUCO_LEVELS) - 1:
+        next_level = current_level + 1
+        return next_level, TRUCO_VALUES[TRUCO_LEVELS[next_level]]
+    else:
+        return current_level, TRUCO_VALUES[TRUCO_LEVELS[current_level]]
+
+def truco_decision(opponent_will_accept=True):
+    """Decide se o oponente aceita ou recusa o truco."""
+    # Pode usar lógica mais elaborada aqui (ex: probabilidade)
+    return opponent_will_accept
