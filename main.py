@@ -44,6 +44,10 @@ def main():
     # Música de fundo
     audio_manager.play_background_music()  # Utilizando SOUNDS_DIR internamente no AudioManager
 
+    voce_venceu_image = pygame.image.load(os.path.join("images", "you-win.png")).convert_alpha()
+    voce_perdeu_image = pygame.image.load(os.path.join("images", "you-lose.png")).convert_alpha()
+    voce_perdeu_image = pygame.transform.scale(voce_perdeu_image, (600,400))
+
     # Variáveis de volume e botões de áudio
     volume = audio_manager.volume
     is_muted = audio_manager.is_muted
@@ -198,7 +202,9 @@ def main():
 
                                     # Verificar pontuação
                                     if game_manager.player_score >= 12:
-                                        draw_text(screen, "VOCÊ VENCEU!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 20))
+                                        screen.blit(voce_venceu_image, (SCREEN_WIDTH // 2 - voce_venceu_image.get_width() // 2,
+                                        SCREEN_HEIGHT // 2 - voce_venceu_image.get_height() // 2))
+
                                         pygame.display.flip()
                                         pygame.mixer.music.stop()
                                         if 'winner-song' in sounds:
@@ -324,7 +330,7 @@ def main():
 
                 # Verifica se alguém chegou em 12 pontos:
                 if game_manager.player_score >= 12:
-                    draw_text(screen, "VOCÊ VENCEU!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 20))
+                    screen.blit(voce_venceu_image, (SCREEN_WIDTH // 2 - voce_venceu_image.get_width() // 2, SCREEN_HEIGHT // 2 - voce_venceu_image.get_height() // 2))
                     pygame.display.flip()
                     pygame.mixer.music.stop()
                     if 'winner-song' in sounds:
@@ -358,7 +364,8 @@ def main():
                     continue
 
                 elif game_manager.opponent_score >= 12:
-                    draw_text(screen, "VOCÊ PERDEU!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 20))
+                    screen.blit(voce_perdeu_image, (SCREEN_WIDTH // 2 - voce_perdeu_image.get_width() // 2,  SCREEN_HEIGHT // 2 - voce_perdeu_image.get_height() // 2))
+
                     pygame.display.flip()
                     pygame.mixer.music.stop()
                     if not is_muted and 'looser-song' in sounds:
