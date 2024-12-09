@@ -7,7 +7,7 @@ import os
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK, TRUCO_LEVELS, TRUCO_VALUES, SOUNDS_DIR, CARD_WIDTH, CARD_HEIGHT
 from resources import load_cards, load_sounds, load_background, load_back_card
 from game_logic import get_card_value
-from game_manager import GameManager  # Removida a vírgula aqui
+from game_manager import GameManager
 from audio_manager import AudioManager
 from ui import UIManager
 from utils import draw_text
@@ -42,7 +42,7 @@ def main():
     manilhas = game_manager.state['manilhas']
 
     # Música de fundo
-    audio_manager.play_background_music()  # Utilizando SOUNDS_DIR internamente no AudioManager
+    audio_manager.play_background_music()
 
     voce_venceu_image = pygame.image.load(os.path.join("images", "you-win.png")).convert_alpha()
     voce_perdeu_image = pygame.image.load(os.path.join("images", "you-lose.png")).convert_alpha()
@@ -56,26 +56,23 @@ def main():
     button_height = 50
     padding = 10
 
-    # Carregar ícones para os botões de áudio
+    # Ícones de volume
     volume_up_icon = pygame.image.load(os.path.join("images", "volume_high_icon.png")).convert_alpha()
     volume_down_icon = pygame.image.load(os.path.join("images", "volume_low_icon.png")).convert_alpha()
     mute_icon = pygame.image.load(os.path.join("images", "mute_icon.png")).convert_alpha()
 
-    # Redimensionar ícones
     volume_up_icon = pygame.transform.scale(volume_up_icon, (button_width, button_height))
     volume_down_icon = pygame.transform.scale(volume_down_icon, (button_width, button_height))
     mute_icon = pygame.transform.scale(mute_icon, (button_width, button_height))
 
-    # Dimensões e posição do painel de pontuação
+    # Painel de pontuação
     panel_width = 180
     panel_height = 80
     panel_x = SCREEN_WIDTH - panel_width - 10
     panel_y = 10
 
-    # Criar uma surface para o painel
     panel_surface = pygame.Surface((panel_width, panel_height))
-    panel_surface.fill((160, 82, 45))  # marrom escuro
-    # Se quiser transparência (ex. 200 de 255), descomente:
+    panel_surface.fill((160, 82, 45))
     panel_surface.set_alpha(100)
 
     screen.blit(panel_surface, (panel_x, panel_y))
@@ -102,7 +99,7 @@ def main():
     # Botão de Truco
     truco_button_rect = pygame.Rect(10, SCREEN_HEIGHT // 2 - 20, 180, 40)
 
-    # Área de jogo para arrastar as cartas
+    # Área de jogo
     play_area_rect = pygame.Rect(
         SCREEN_WIDTH // 2 - CARD_WIDTH // 2,
         SCREEN_HEIGHT - 300,
@@ -113,7 +110,7 @@ def main():
     # Variáveis de jogo
     dragging_card = None
     dragging_pos = None
-    player_turn = False  # Oponente começa jogando
+    player_turn = False
     opponent_turn = True
     played_cards = {'player': None, 'opponent': None}
     player_played_cards = []
@@ -125,7 +122,6 @@ def main():
     current_truco_level = game_manager.current_truco_level
     opponent_always_accept_truco = game_manager.opponent_always_accept_truco
 
-    # Pontos em caso de recusa de Truco
     points_on_refusal = {
         3: 1,
         6: 3,
@@ -163,32 +159,31 @@ def main():
                             requested_level = TRUCO_LEVELS[next_truco_level]
                             requested_value = TRUCO_VALUES[requested_level]
 
+                            # Jogador pede truco
                             truco_requested = True
+                            truco_display_time = pygame.time.get_ticks()
+                            truco_display_duration = 2000
                             truco_message = f"Você pediu {requested_level.capitalize()}!"
                             print(f"Jogador pediu {requested_level.capitalize()}")
 
                             # Decisão do Oponente
                             if opponent_always_accept_truco:
                                 truco_accepted = True
-                                # Atualizar o bet_value no gerenciador do jogo
                                 game_manager.bet_value = requested_value
                                 print(f"Oponente aceitou o {requested_level.capitalize()}")
-                                draw_text(screen, f"Oponente aceitou o {requested_level.capitalize()}!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
-                                pygame.display.flip()
-                                time.sleep(1)
-                                truco_requested = False
                                 current_truco_level += 1
                                 opponent_always_accept_truco = True
+                                # Aqui não desenhamos nada, apenas mudamos estado
+                                # truco_requested = False se quiser que saia rápido
                             else:
-                                # Oponente decide aleatoriamente
                                 if random.choice([True, False]):
+                                    # Oponente aceitou
                                     truco_accepted = True
                                     game_manager.bet_value = requested_value
                                     print(f"Oponente aceitou o {requested_level.capitalize()}")
-                                    draw_text(screen, f"Oponente aceitou o {requested_level.capitalize()}!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
-                                    pygame.display.flip()
-                                    time.sleep(1)
-                                    truco_requested = False
+                                    truco_requested = True
+                                    truco_display_time = pygame.time.get_ticks()
+                                    truco_display_duration = 2000
                                     current_truco_level += 1
                                     opponent_always_accept_truco = True
                                 else:
@@ -196,62 +191,15 @@ def main():
                                     truco_accepted = False
                                     game_manager.player_score += points_on_refusal.get(requested_value, 1)
                                     print(f"Oponente recusou o {requested_level.capitalize()}")
-                                    draw_text(screen, f"Oponente recusou o {requested_level.capitalize()}!", font, BLACK, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70))
-                                    pygame.display.flip()
-                                    time.sleep(2)
+                                    # Não desenha aqui, a mensagem será desenhada no if truco_requested no final do loop
 
-                                    # Verificar pontuação
-                                    if game_manager.player_score >= 12:
-                                        screen.blit(voce_venceu_image, (SCREEN_WIDTH // 2 - voce_venceu_image.get_width() // 2,
-                                        SCREEN_HEIGHT // 2 - voce_venceu_image.get_height() // 2))
-
-                                        pygame.display.flip()
-                                        pygame.mixer.music.stop()
-                                        if 'winner-song' in sounds:
-                                            if not is_muted:
-                                                sounds['winner-song'].play()
-                                        else:
-                                            print("Erro: Música de vitória 'winner-song' não encontrada.")
-
-                                        time.sleep(5)
-                                        if 'winner-song' in sounds:
-                                            sounds['winner-song'].stop()
-
-                                        game_manager.reset_full_game()
-                                        player_hand = game_manager.state['player_hand']
-                                        opponent_hand = game_manager.state['opponent_hand']
-                                        vira_card = game_manager.state['vira_card']
-                                        manilhas = game_manager.state['manilhas']
-                                        round_results = game_manager.round_results
-                                        current_round = game_manager.current_round
-                                        truco_requested = False
-                                        truco_message = ""
-                                        truco_accepted = False
-                                        current_truco_level = -1
-                                        player_played_cards = []
-                                        opponent_always_accept_truco = False
-                                        audio_manager.play_background_music()
-                                        continue
-                                    else:
-                                        # Reiniciar partida sem zerar pontuação geral
-                                        game_manager.reset_game()
-                                        player_hand = game_manager.state['player_hand']
-                                        opponent_hand = game_manager.state['opponent_hand']
-                                        vira_card = game_manager.state['vira_card']
-                                        manilhas = game_manager.state['manilhas']
-                                        round_results = game_manager.round_results
-                                        current_round = game_manager.current_round
-                                        truco_requested = False
-                                        truco_message = ""
-                                        player_played_cards = []
-                                        current_truco_level = -1
-                                        opponent_always_accept_truco = False
-                                        continue
+                                    # Aqui você já tem a lógica para checar pontuação e resetar se preciso
+                                    # Caso precise resetar o estado do jogo após recusa, faça após desenhar no final
+                                    # do loop. Por enquanto, somente mude estados.
                         else:
                             print("Truco já atingiu o nível máximo.")
-                            draw_text(screen, "Truco Máximo!", font, BLACK, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 70))
-                            pygame.display.flip()
-                            time.sleep(1)
+                            # Não desenha diretamente aqui, a mensagem de Truco é mostrada no if truco_requested
+
                     # Se truco já foi solicitado, não faz nada
                 else:
                     # Clique nas cartas do jogador
@@ -280,7 +228,6 @@ def main():
                         player_turn = False
                         opponent_turn = True
                     else:
-                        # Retorna a carta para a mão do jogador
                         player_hand.append(dragging_card)
                     dragging_card = None
                     dragging_pos = None
@@ -295,7 +242,7 @@ def main():
             else:
                 played_cards['opponent'] = None
 
-        # Determinar vencedor da rodada usando get_card_value
+        # Determina vencedor da rodada
         if played_cards['player'] and played_cards['opponent']:
             player_card_value = get_card_value(played_cards['player'], manilhas)
             opponent_card_value = get_card_value(played_cards['opponent'], manilhas)
@@ -317,18 +264,22 @@ def main():
             current_round += 1
             game_manager.current_round = current_round
 
-            # Verificar se a partida (de 3 rodadas) acabou
+            # Verifica fim da partida (3 rodadas)
             if current_round > 3:
                 player_rounds_won = round_results.count('Jogador')
                 opponent_rounds_won = round_results.count('Oponente')
 
-                # Usa o bet_value atual do game_manager
+                # Usa o bet_value
                 if player_rounds_won > opponent_rounds_won:
                     game_manager.player_score += game_manager.bet_value
                 elif opponent_rounds_won > player_rounds_won:
                     game_manager.opponent_score += game_manager.bet_value
+                else:
+                    # Empate
+                    game_manager.player_score += game_manager.bet_value
+                    game_manager.opponent_score += game_manager.bet_value
 
-                # Verifica se alguém chegou em 12 pontos:
+                # Verificar 12 pontos
                 if game_manager.player_score >= 12:
                     screen.blit(voce_venceu_image, (SCREEN_WIDTH // 2 - voce_venceu_image.get_width() // 2, SCREEN_HEIGHT // 2 - voce_venceu_image.get_height() // 2))
                     pygame.display.flip()
@@ -350,22 +301,18 @@ def main():
                     manilhas = game_manager.state['manilhas']
                     round_results = game_manager.round_results
                     current_round = game_manager.current_round
-
-                    # Sincroniza o estado do truco após o reset
                     truco_requested = game_manager.truco_requested
                     truco_accepted = game_manager.truco_accepted
                     current_truco_level = game_manager.current_truco_level
                     opponent_always_accept_truco = game_manager.opponent_always_accept_truco
                     truco_message = ""
-
                     player_played_cards = []
                     played_cards = {'player': None, 'opponent': None}
                     audio_manager.play_background_music()
                     continue
 
                 elif game_manager.opponent_score >= 12:
-                    screen.blit(voce_perdeu_image, (SCREEN_WIDTH // 2 - voce_perdeu_image.get_width() // 2,  SCREEN_HEIGHT // 2 - voce_perdeu_image.get_height() // 2))
-
+                    screen.blit(voce_perdeu_image, (SCREEN_WIDTH // 2 - voce_perdeu_image.get_width() // 2, SCREEN_HEIGHT // 2 - voce_perdeu_image.get_height() // 2))
                     pygame.display.flip()
                     pygame.mixer.music.stop()
                     if not is_muted and 'looser-song' in sounds:
@@ -381,19 +328,17 @@ def main():
                     manilhas = game_manager.state['manilhas']
                     round_results = game_manager.round_results
                     current_round = game_manager.current_round
-
                     truco_requested = game_manager.truco_requested
                     truco_accepted = game_manager.truco_accepted
                     current_truco_level = game_manager.current_truco_level
                     opponent_always_accept_truco = game_manager.opponent_always_accept_truco
                     truco_message = ""
-
                     player_played_cards = []
                     played_cards = {'player': None, 'opponent': None}
                     audio_manager.play_background_music()
                     continue
                 else:
-                    # Nenhum dos dois chegou a 12 pontos, então apenas reinicia a partida
+                    # Ninguém chegou a 12, reset parcial
                     game_manager.reset_game_state()
                     player_hand = game_manager.state['player_hand']
                     opponent_hand = game_manager.state['opponent_hand']
@@ -401,24 +346,27 @@ def main():
                     manilhas = game_manager.state['manilhas']
                     round_results = game_manager.round_results
                     current_round = game_manager.current_round
-
                     truco_requested = game_manager.truco_requested
                     truco_accepted = game_manager.truco_accepted
                     current_truco_level = game_manager.current_truco_level
                     opponent_always_accept_truco = game_manager.opponent_always_accept_truco
                     truco_message = ""
-
-                    player_played_cards = []
                     played_cards = {'player': None, 'opponent': None}
-
+                    player_played_cards = []
                     continue
+
+        current_time = pygame.time.get_ticks()
+        if truco_requested and current_time > truco_display_time + truco_display_duration:
+            truco_requested = False
+            truco_message = ""
+            truco_accepted = False
 
         # Desenhar a tela
         screen.fill(WHITE)
         screen.blit(background, (0, 0))
         pygame.draw.rect(screen, (0, 0, 0), play_area_rect, 3 , 5)
 
-        # Desenhar as cartas do jogador
+        # Cartas do jogador
         for i, card in enumerate(player_hand):
             x = SCREEN_WIDTH // 2 - len(player_hand) * 50 + i * 100
             y = SCREEN_HEIGHT - 140
@@ -428,7 +376,7 @@ def main():
             else:
                 print(f"Carta '{card_key}' não encontrada nas imagens.")
 
-        # Desenhar Cartas do Oponente (viradas)
+        # Cartas do Oponente (viradas)
         for i, card in enumerate(opponent_hand):
             x = SCREEN_WIDTH // 2 - len(opponent_hand) * 50 + i * 100
             y = 20
@@ -456,7 +404,7 @@ def main():
             else:
                 print(f"Carta '{card_key}' não encontrada nas imagens.")
 
-        # Cartas já jogadas pelo jogador (histórico)
+        # Cartas já jogadas pelo jogador
         for i, card in enumerate(player_played_cards):
             card_key = card.lower()
             if card_key in cards:
@@ -481,13 +429,11 @@ def main():
         else:
             print(f"Carta '{card_key}' não encontrada nas imagens.")
 
-        # Desenhar painel de pontuação (após todas as cartas e componentes)
+        # Painel de pontuação
         screen.blit(panel_surface, (panel_x, panel_y))
         opponent_score_text = f"Oponente: {game_manager.opponent_score}"
         player_score_text = f"Jogador: {game_manager.player_score}"
-        # Desenhar o texto do oponente em vermelho
         draw_text(screen, opponent_score_text, font, WHITE, (panel_x + 10, panel_y + 10))
-        # Desenhar o texto do jogador em verde
         draw_text(screen, player_score_text, font, WHITE, (panel_x + 10, panel_y + 40))
 
         # Rodada Atual
@@ -505,7 +451,7 @@ def main():
             button_label = "Truco Máximo"
         ui_manager.draw_button(truco_button_rect, button_label, (0,128,0), WHITE)
 
-        # Botões de volume (com ícones)
+        # Botões de volume
         pygame.draw.rect(screen, (0, 255, 0), volume_up_button, 0, 10)
         pygame.draw.rect(screen, (255, 255, 0), volume_down_button, 0, 10)
         pygame.draw.rect(screen, (255, 0, 0), mute_button, 0, 10)
@@ -517,15 +463,39 @@ def main():
         screen.blit(volume_up_icon, volume_up_icon_rect)
         screen.blit(volume_down_icon, volume_down_icon_rect)
         screen.blit(mute_icon, mute_icon_rect)
-        
 
         # Mensagem de Truco
         if truco_requested:
-            ui_manager.draw_text(truco_message, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 100), BLACK)
-            if truco_accepted:
-                ui_manager.draw_text("Oponente aceitou o Truco!", (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70), BLACK)
-            else:
-                ui_manager.draw_text("Oponente recusou o Truco!", (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 70), BLACK)
+            # Definir dimensões com base no botão
+            msg_w = truco_button_rect.width
+            msg_h = 70
+            pos_x = truco_button_rect.x
+            pos_y = truco_button_rect.y + truco_button_rect.height + 5
+
+            msg_surface = pygame.Surface((msg_w, msg_h), pygame.SRCALPHA)
+            msg_surface.fill((0, 0, 0, 180))
+
+            # Desenhar a mensagem principal
+            draw_text(msg_surface, truco_message, pygame.font.SysFont(None,20), (255, 255, 255), (10, 5))
+
+            # Ícone menor, por exemplo 32px:
+            icon = pygame.image.load(os.path.join("images", "check.png" if truco_accepted else "x.png")).convert_alpha()
+            icon = pygame.transform.scale(icon, (32, 32))
+
+            text = "Oponente aceitou" if truco_accepted else "Oponente recusou"
+            text_color = (0, 200, 0) if truco_accepted else (200, 0, 0)
+
+            icon_x_pos = 10
+            icon_y_pos = msg_h // 2 - icon.get_height() // 2 + 20
+            msg_surface.blit(icon, (icon_x_pos, icon_y_pos))
+
+            text_x = icon_x_pos + icon.get_width() + 10
+            text_y = icon_y_pos + (icon.get_height() // 2 - pygame.font.SysFont(None,20).get_height() // 2)
+            draw_text(msg_surface, text, pygame.font.SysFont(None,20), text_color, (text_x, text_y))
+
+            screen.blit(msg_surface, (pos_x, pos_y))
+
+
 
         pygame.display.flip()
         clock.tick(30)
