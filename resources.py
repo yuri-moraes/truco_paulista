@@ -40,7 +40,7 @@ def load_background():
 
 def load_back_card():
     """Carrega a imagem da carta virada para o oponente."""
-    back_card_path = os.path.join(IMAGES_DIR, "blank_card.png")
+    back_card_path = os.path.join(IMAGES_DIR, "background-removebg-preview.png")
     try:
         back_card = pygame.image.load(back_card_path)
         back_card = pygame.transform.scale(back_card, (CARD_WIDTH, CARD_HEIGHT))

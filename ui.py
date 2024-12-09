@@ -13,6 +13,6 @@ class UIManager:
         draw_text(self.screen, text, self.font, color, position)
     
     def draw_button(self, rect, text, color=(0, 128, 0), text_color=(255, 255, 255)):
-        pygame.draw.rect(self.screen, color, rect)
+        pygame.draw.rect(self.screen, color, rect, 0, 5)
         text_surface = self.font.render(text, True, text_color)
         self.screen.blit(text_surface, text_surface.get_rect(center=rect.center))
