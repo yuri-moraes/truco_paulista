@@ -191,14 +191,24 @@ def main():
                                     truco_accepted = False
                                     game_manager.player_score += points_on_refusal.get(requested_value, 1)
                                     print(f"Oponente recusou o {requested_level.capitalize()}")
-                                    # Não desenha aqui, a mensagem será desenhada no if truco_requested no final do loop
-
-                                    # Aqui você já tem a lógica para checar pontuação e resetar se preciso
-                                    # Caso precise resetar o estado do jogo após recusa, faça após desenhar no final
-                                    # do loop. Por enquanto, somente mude estados.
+                                    truco_requested = True
+                                    truco_display_time = pygame.time.get_ticks()
+                                    truco_display_duration = 2000
+                                    game_manager.reset_game_state()
+                                    player_hand = game_manager.state['player_hand']
+                                    opponent_hand = game_manager.state['opponent_hand']
+                                    vira_card = game_manager.state['vira_card']
+                                    manilhas = game_manager.state['manilhas']
+                                    round_results = game_manager.round_results
+                                    current_round = game_manager.current_round
+                                    played_cards = {'player': None, 'opponent': None}
+                                    player_played_cards = []
+                                    current_truco_level = -1
+                                    opponent_always_accept_truco = False
+                                    opponent_turn = True
+                                    player_turn = False
                         else:
                             print("Truco já atingiu o nível máximo.")
-                            # Não desenha diretamente aqui, a mensagem de Truco é mostrada no if truco_requested
 
                     # Se truco já foi solicitado, não faz nada
                 else:
